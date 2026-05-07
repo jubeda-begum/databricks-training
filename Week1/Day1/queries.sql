@@ -11,7 +11,7 @@ SELECT * FROM Employee
 WHERE age > 30;
 
 -- Query4: Select all department names
-SELECT department FROM Employee;
+SELECT * FROM Department;
 
 -- Query5: Select employees working in the IT department
 SELECT * FROM Employee WHERE department = 'IT';
