@@ -1,5 +1,11 @@
+
 **Query #1**
 
+    -- =========================================
+    -- BASIC QUERIES (1–5)
+    -- =========================================
+    
+    -- 1. Select all columns from the Employee table
     SELECT * FROM Employee;
 
 | emp_id | name        | age | salary  | department_id | hire_date  |
@@ -15,10 +21,11 @@
 | 9      | Grace Kelly | 27  | 65000.0 | 1             | 2018-11-13 |
 | 10     | Hannah Lee  | 30  | 53000.0 | 4             | 2020-02-25 |
 
+---
 **Query #2**
--- Query2: Select only the name and salary columns
-    SELECT name, salary
-    FROM Employee;
+
+-- 2. Select only the name and salary columns
+SELECT name, salary FROM Employee;
 
 | name        | salary  |
 | ----------- | ------- |
@@ -33,10 +40,12 @@
 | Grace Kelly | 65000.0 |
 | Hannah Lee  | 53000.0 |
 
-    -- Query3: Select employees older than 30
-    SELECT *
-    FROM Employee
-    WHERE age > 30;
+
+**Query #3**
+
+ -- 3. Select employees older than 30
+SELECT * FROM Employee
+WHERE age > 30;
 
 | emp_id | name        | age | salary  | department_id | hire_date  |
 | ------ | ----------- | --- | ------- | ------------- | ---------- |
@@ -46,16 +55,20 @@
 | 7      | Eve Black   | 40  | 55000.0 | 3             | 2021-08-30 |
 | 8      | Frank White | 32  | 48000.0 |               | 2021-07-10 |
 
-    -- Query4: Select all department names
-    SELECT * FROM Department;
+---
+**Query #4**
 
-| department_id | name      |
-| ------------- | --------- |
-| 1             | IT        |
-| 2             | HR        |
-| 3             | Finance   |
-| 4             | Marketing |
+    -- 4. Select names of all departments
+    SELECT name FROM Department;
 
+| name      |
+| --------- |
+| IT        |
+| HR        |
+| Finance   |
+| Marketing |
+
+---
 **Query #5**
 
     -- 5. Select employees who work in IT department
@@ -1068,8 +1081,8 @@ There are no results to be displayed.
 ---
 **Query #65**
 
-    -- 65. Employees older than department average age
-    SELECT name, salary
+-- 65. Employees older than department average age
+SELECT name, age
     FROM Employee e
     WHERE age > (
         SELECT AVG(age)
@@ -1077,10 +1090,13 @@ There are no results to be displayed.
         WHERE department_id = e.department_id
     );
 
-| name        | salary  |
-| ----------- | ------- |
-| Jane Smith  | 60000.0 |
-| Bob Brown   | 80000.0 |
-| David Green | 70000.0 |
-| Eve Black   | 55000.0 |
+| name        | age |
+| ----------- | --- |
+| Jane Smith  | 34  |
+| Bob Brown   | 45  |
+| David Green | 38  |
+| Eve Black   | 40  |
 
+---
+
+[View on DB Fiddle](https://www.db-fiddle.com/)
