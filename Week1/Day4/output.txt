@@ -1,0 +1,782 @@
+**Query #1**
+
+    /* =====================================================
+    QUESTION 1
+    Use ROW_NUMBER() to assign a row number to employees ordered by salary descending.
+    ===================================================== */
+    
+    SELECT employee_name,
+           salary,
+           ROW_NUMBER() OVER (
+               ORDER BY salary DESC
+           ) AS row_num
+    FROM employees;
+
+| employee_name | salary  | row_num |
+| ------------- | ------- | ------- |
+| Diana Prince  | 95000.0 | 1       |
+| Charlie Brown | 90000.0 | 2       |
+| Alice Johnson | 70000.0 | 3       |
+| Bob Smith     | 65000.0 | 4       |
+
+---
+**Query #2**
+
+    /* =====================================================
+    QUESTION 2
+    Use RANK() to rank employees by salary.
+    ===================================================== */
+    
+    SELECT employee_name,
+           salary,
+           RANK() OVER (
+               ORDER BY salary DESC
+           ) AS salary_rank
+    FROM employees;
+
+| employee_name | salary  | salary_rank |
+| ------------- | ------- | ----------- |
+| Diana Prince  | 95000.0 | 1           |
+| Charlie Brown | 90000.0 | 2           |
+| Alice Johnson | 70000.0 | 3           |
+| Bob Smith     | 65000.0 | 4           |
+
+---
+**Query #3**
+
+    /* =====================================================
+    QUESTION 3
+    Use DENSE_RANK() to rank employees by salary.
+    ===================================================== */
+    
+    SELECT employee_name,
+           salary,
+           DENSE_RANK() OVER (
+               ORDER BY salary DESC
+           ) AS dense_rank_value
+    FROM employees;
+
+| employee_name | salary  | dense_rank_value |
+| ------------- | ------- | ---------------- |
+| Diana Prince  | 95000.0 | 1                |
+| Charlie Brown | 90000.0 | 2                |
+| Alice Johnson | 70000.0 | 3                |
+| Bob Smith     | 65000.0 | 4                |
+
+---
+**Query #4**
+
+    /* =====================================================
+    QUESTION 4
+    Find the top 3 highest-paid employees using a window function.
+    ===================================================== */
+    
+    SELECT *
+    FROM (
+        SELECT employee_name,
+               salary,
+               ROW_NUMBER() OVER (
+                   ORDER BY salary DESC
+               ) AS rn
+        FROM employees
+    ) ranked
+    WHERE rn <= 3;
+
+| employee_name | salary  | rn  |
+| ------------- | ------- | --- |
+| Diana Prince  | 95000.0 | 1   |
+| Charlie Brown | 90000.0 | 2   |
+| Alice Johnson | 70000.0 | 3   |
+
+---
+**Query #5**
+
+    /* =====================================================
+    QUESTION 5
+    Rank employees within each department using PARTITION BY.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           RANK() OVER (
+               PARTITION BY department
+               ORDER BY salary DESC
+           ) AS dept_rank
+    FROM employees;
+
+| employee_name | department | salary  | dept_rank |
+| ------------- | ---------- | ------- | --------- |
+| Diana Prince  | IT         | 95000.0 | 1         |
+| Charlie Brown | IT         | 90000.0 | 2         |
+| Alice Johnson | Sales      | 70000.0 | 1         |
+| Bob Smith     | Sales      | 65000.0 | 2         |
+
+---
+**Query #6**
+
+    /* =====================================================
+    QUESTION 6
+    Display the highest salary in each department using a window function.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           MAX(salary) OVER (
+               PARTITION BY department
+           ) AS highest_salary
+    FROM employees;
+
+| employee_name | department | salary  | highest_salary |
+| ------------- | ---------- | ------- | -------------- |
+| Charlie Brown | IT         | 90000.0 | 95000.0        |
+| Diana Prince  | IT         | 95000.0 | 95000.0        |
+| Alice Johnson | Sales      | 70000.0 | 70000.0        |
+| Bob Smith     | Sales      | 65000.0 | 70000.0        |
+
+---
+**Query #7**
+
+    /* =====================================================
+    QUESTION 7
+    Calculate the running total of order amounts ordered by order_date.
+    ===================================================== */
+    
+    SELECT order_id,
+           order_date,
+           total_amount,
+           SUM(total_amount) OVER (
+               ORDER BY order_date
+           ) AS running_total
+    FROM orders;
+
+| order_id | order_date | total_amount | running_total |
+| -------- | ---------- | ------------ | ------------- |
+| 101      | 2024-01-10 | 500.0        | 500.0         |
+| 102      | 2024-01-11 | 700.0        | 1200.0        |
+| 103      | 2024-01-15 | 1200.0       | 2400.0        |
+| 104      | 2024-01-18 | 300.0        | 2700.0        |
+
+---
+**Query #8**
+
+    /* =====================================================
+    QUESTION 8
+    Calculate the cumulative sales amount for each employee.
+    ===================================================== */
+    
+    SELECT employee_id,
+           order_date,
+           total_amount,
+           SUM(total_amount) OVER (
+               PARTITION BY employee_id
+               ORDER BY order_date
+           ) AS cumulative_sales
+    FROM orders;
+
+| employee_id | order_date | total_amount | cumulative_sales |
+| ----------- | ---------- | ------------ | ---------------- |
+| 1           | 2024-01-10 | 500.0        | 500.0            |
+| 1           | 2024-01-15 | 1200.0       | 1700.0           |
+| 2           | 2024-01-11 | 700.0        | 700.0            |
+| 3           | 2024-01-18 | 300.0        | 300.0            |
+
+---
+**Query #9**
+
+    /* =====================================================
+    QUESTION 9
+    Use LAG() to show the previous order amount for each customer.
+    ===================================================== */
+    
+    SELECT customer_id,
+           order_date,
+           total_amount,
+           LAG(total_amount) OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date
+           ) AS previous_order
+    FROM orders;
+
+| customer_id | order_date | total_amount | previous_order |
+| ----------- | ---------- | ------------ | -------------- |
+| 1           | 2024-01-10 | 500.0        |                |
+| 1           | 2024-01-15 | 1200.0       | 500.0          |
+| 2           | 2024-01-11 | 700.0        |                |
+| 3           | 2024-01-18 | 300.0        |                |
+
+---
+**Query #10**
+
+    /* =====================================================
+    QUESTION 10
+    Use LEAD() to show the next order amount for each customer.
+    ===================================================== */
+    
+    SELECT customer_id,
+           order_date,
+           total_amount,
+           LEAD(total_amount) OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date
+           ) AS next_order
+    FROM orders;
+
+| customer_id | order_date | total_amount | next_order |
+| ----------- | ---------- | ------------ | ---------- |
+| 1           | 2024-01-10 | 500.0        | 1200.0     |
+| 1           | 2024-01-15 | 1200.0       |            |
+| 2           | 2024-01-11 | 700.0        |            |
+| 3           | 2024-01-18 | 300.0        |            |
+
+---
+**Query #11**
+
+    /* =====================================================
+    QUESTION 11
+    Find the difference between the current order amount and previous order amount.
+    ===================================================== */
+    
+    SELECT customer_id,
+           order_date,
+           total_amount,
+           total_amount -
+           LAG(total_amount) OVER (
+               PARTITION BY customer_id
+               ORDER BY order_date
+           ) AS amount_difference
+    FROM orders;
+
+| customer_id | order_date | total_amount | amount_difference |
+| ----------- | ---------- | ------------ | ----------------- |
+| 1           | 2024-01-10 | 500.0        |                   |
+| 1           | 2024-01-15 | 1200.0       | 700.0             |
+| 2           | 2024-01-11 | 700.0        |                   |
+| 3           | 2024-01-18 | 300.0        |                   |
+
+---
+**Query #12**
+
+    /* =====================================================
+    QUESTION 12
+    Calculate a moving average of the last 3 orders.
+    ===================================================== */
+    
+    SELECT order_id,
+           order_date,
+           total_amount,
+           AVG(total_amount) OVER (
+               ORDER BY order_date
+               ROWS BETWEEN 2 PRECEDING
+               AND CURRENT ROW
+           ) AS moving_average
+    FROM orders;
+
+| order_id | order_date | total_amount | moving_average |
+| -------- | ---------- | ------------ | -------------- |
+| 101      | 2024-01-10 | 500.0        | 500.0          |
+| 102      | 2024-01-11 | 700.0        | 600.0          |
+| 103      | 2024-01-15 | 1200.0       | 800.0          |
+| 104      | 2024-01-18 | 300.0        | 733.333333     |
+
+---
+**Query #13**
+
+    /* =====================================================
+    QUESTION 13
+    Use NTILE(4) to divide employees into salary quartiles.
+    ===================================================== */
+    
+    SELECT employee_name,
+           salary,
+           NTILE(4) OVER (
+               ORDER BY salary DESC
+           ) AS quartile
+    FROM employees;
+
+| employee_name | salary  | quartile |
+| ------------- | ------- | -------- |
+| Diana Prince  | 95000.0 | 1        |
+| Charlie Brown | 90000.0 | 2        |
+| Alice Johnson | 70000.0 | 3        |
+| Bob Smith     | 65000.0 | 4        |
+
+---
+**Query #14**
+
+    /* =====================================================
+    QUESTION 14
+    Find the first order placed by each customer using ROW_NUMBER().
+    ===================================================== */
+    
+    SELECT *
+    FROM (
+        SELECT customer_id,
+               order_id,
+               order_date,
+               ROW_NUMBER() OVER (
+                   PARTITION BY customer_id
+                   ORDER BY order_date
+               ) AS rn
+        FROM orders
+    ) first_orders
+    WHERE rn = 1;
+
+| customer_id | order_id | order_date | rn  |
+| ----------- | -------- | ---------- | --- |
+| 1           | 101      | 2024-01-10 | 1   |
+| 2           | 102      | 2024-01-11 | 1   |
+| 3           | 104      | 2024-01-18 | 1   |
+
+---
+**Query #15**
+
+    /* =====================================================
+    QUESTION 15
+    Find the latest order placed by each customer.
+    ===================================================== */
+    
+    SELECT *
+    FROM (
+        SELECT customer_id,
+               order_id,
+               order_date,
+               ROW_NUMBER() OVER (
+                   PARTITION BY customer_id
+                   ORDER BY order_date DESC
+               ) AS rn
+        FROM orders
+    ) latest_orders
+    WHERE rn = 1;
+
+| customer_id | order_id | order_date | rn  |
+| ----------- | -------- | ---------- | --- |
+| 1           | 103      | 2024-01-15 | 1   |
+| 2           | 102      | 2024-01-11 | 1   |
+| 3           | 104      | 2024-01-18 | 1   |
+
+---
+**Query #16**
+
+    /* =====================================================
+    QUESTION 16
+    Display employee salaries along with department average salary.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           AVG(salary) OVER (
+               PARTITION BY department
+           ) AS dept_average
+    FROM employees;
+
+| employee_name | department | salary  | dept_average |
+| ------------- | ---------- | ------- | ------------ |
+| Charlie Brown | IT         | 90000.0 | 92500.0      |
+| Diana Prince  | IT         | 95000.0 | 92500.0      |
+| Alice Johnson | Sales      | 70000.0 | 67500.0      |
+| Bob Smith     | Sales      | 65000.0 | 67500.0      |
+
+---
+**Query #17**
+
+    /* =====================================================
+    QUESTION 17
+    Find employees earning above their department average salary.
+    ===================================================== */
+    
+    WITH dept_avg AS (
+    
+        SELECT employee_id,
+               employee_name,
+               department,
+               salary,
+               AVG(salary) OVER (
+                   PARTITION BY department
+               ) AS avg_salary
+        FROM employees
+    )
+    
+    SELECT *
+    FROM dept_avg
+    WHERE salary > avg_salary;
+
+| employee_id | employee_name | department | salary  | avg_salary |
+| ----------- | ------------- | ---------- | ------- | ---------- |
+| 4           | Diana Prince  | IT         | 95000.0 | 92500.0    |
+| 1           | Alice Johnson | Sales      | 70000.0 | 67500.0    |
+
+---
+**Query #18**
+
+    /* =====================================================
+    QUESTION 18
+    Use SUM() OVER(PARTITION BY department) to calculate department payroll.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           SUM(salary) OVER (
+               PARTITION BY department
+           ) AS department_payroll
+    FROM employees;
+
+| employee_name | department | salary  | department_payroll |
+| ------------- | ---------- | ------- | ------------------ |
+| Charlie Brown | IT         | 90000.0 | 185000.0           |
+| Diana Prince  | IT         | 95000.0 | 185000.0           |
+| Alice Johnson | Sales      | 70000.0 | 135000.0           |
+| Bob Smith     | Sales      | 65000.0 | 135000.0           |
+
+---
+**Query #19**
+
+    /* =====================================================
+    QUESTION 19
+    Find the percentage contribution of each employee salary within their department.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           ROUND(
+               salary * 100 /
+               SUM(salary) OVER (
+                   PARTITION BY department
+               ),
+               2
+           ) AS percentage_contribution
+    FROM employees;
+
+| employee_name | department | salary  | percentage_contribution |
+| ------------- | ---------- | ------- | ----------------------- |
+| Charlie Brown | IT         | 90000.0 | 48.65                   |
+| Diana Prince  | IT         | 95000.0 | 51.35                   |
+| Alice Johnson | Sales      | 70000.0 | 51.85                   |
+| Bob Smith     | Sales      | 65000.0 | 48.15                   |
+
+---
+**Query #20**
+
+    /* =====================================================
+    QUESTION 20
+    Use COUNT() OVER() to show total number of employees alongside each row.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           COUNT(*) OVER () AS total_employees
+    FROM employees;
+
+| employee_name | department | total_employees |
+| ------------- | ---------- | --------------- |
+| Alice Johnson | Sales      | 4               |
+| Bob Smith     | Sales      | 4               |
+| Charlie Brown | IT         | 4               |
+| Diana Prince  | IT         | 4               |
+
+---
+**Query #21**
+
+    /* =====================================================
+    QUESTION 21
+    Create a CTE to calculate total sales per employee.
+    ===================================================== */
+    
+    WITH employee_sales AS (
+    
+        SELECT employee_id,
+               SUM(total_amount) AS total_sales
+        FROM orders
+        GROUP BY employee_id
+    )
+    
+    SELECT *
+    FROM employee_sales;
+
+| employee_id | total_sales |
+| ----------- | ----------- |
+| 1           | 1700.0      |
+| 2           | 700.0       |
+| 3           | 300.0       |
+
+---
+**Query #22**
+
+    /* =====================================================
+    QUESTION 22
+    Use a CTE to find employees whose sales exceed the company average.
+    ===================================================== */
+    
+    WITH employee_sales AS (
+    
+        SELECT employee_id,
+               SUM(total_amount) AS total_sales
+        FROM orders
+        GROUP BY employee_id
+    )
+    
+    SELECT *
+    FROM employee_sales
+    WHERE total_sales > (
+    
+        SELECT AVG(total_sales)
+        FROM employee_sales
+    );
+
+| employee_id | total_sales |
+| ----------- | ----------- |
+| 1           | 1700.0      |
+
+---
+**Query #23**
+
+    /* =====================================================
+    QUESTION 23
+    Create multiple CTEs to calculate customer total spending and rankings.
+    ===================================================== */
+    
+    WITH customer_spending AS (
+    
+        SELECT customer_id,
+               SUM(total_amount) AS total_spent
+        FROM orders
+        GROUP BY customer_id
+    )
+    
+    SELECT customer_id,
+           total_spent,
+           RANK() OVER (
+               ORDER BY total_spent DESC
+           ) AS spending_rank
+    FROM customer_spending;
+
+| customer_id | total_spent | spending_rank |
+| ----------- | ----------- | ------------- |
+| 1           | 1700.0      | 1             |
+| 2           | 700.0       | 2             |
+| 3           | 300.0       | 3             |
+
+---
+**Query #24**
+
+    /* =====================================================
+    QUESTION 24
+    Write a recursive CTE to generate numbers from 1 to 10.
+    ===================================================== */
+    
+    WITH RECURSIVE numbers AS (
+    
+        SELECT 1 AS num
+    
+        UNION ALL
+    
+        SELECT num + 1
+        FROM numbers
+        WHERE num < 10
+    )
+    
+    SELECT *
+    FROM numbers;
+
+| num |
+| --- |
+| 1   |
+| 2   |
+| 3   |
+| 4   |
+| 5   |
+| 6   |
+| 7   |
+| 8   |
+| 9   |
+| 10  |
+
+---
+**Query #25**
+
+    /* =====================================================
+    QUESTION 25
+    Use a recursive CTE to display employee hierarchy data.
+    ===================================================== */
+    
+    WITH RECURSIVE employee_hierarchy AS (
+    
+        SELECT employee_id,
+               employee_name,
+               department
+        FROM employees
+        WHERE employee_id = 1
+    
+        UNION ALL
+    
+        SELECT e.employee_id,
+               e.employee_name,
+               e.department
+        FROM employees e
+        INNER JOIN employee_hierarchy eh
+        ON e.employee_id = eh.employee_id + 1
+        WHERE e.employee_id <= 4
+    )
+    
+    SELECT *
+    FROM employee_hierarchy;
+
+| employee_id | employee_name | department |
+| ----------- | ------------- | ---------- |
+| 1           | Alice Johnson | Sales      |
+| 2           | Bob Smith     | Sales      |
+| 3           | Charlie Brown | IT         |
+| 4           | Diana Prince  | IT         |
+
+---
+**Query #26**
+
+    /* =====================================================
+    QUESTION 26
+    Create a CTE that filters orders above the average order amount.
+    ===================================================== */
+    
+    WITH avg_orders AS (
+    
+        SELECT *
+        FROM orders
+        WHERE total_amount > (
+    
+            SELECT AVG(total_amount)
+            FROM orders
+        )
+    )
+    
+    SELECT *
+    FROM avg_orders;
+
+| order_id | customer_id | employee_id | order_date | total_amount |
+| -------- | ----------- | ----------- | ---------- | ------------ |
+| 102      | 2           | 2           | 2024-01-11 | 700.0        |
+| 103      | 1           | 1           | 2024-01-15 | 1200.0       |
+
+---
+**Query #27**
+
+    /* =====================================================
+    QUESTION 27
+    Use a CTE and window function together to rank customers by total spending.
+    ===================================================== */
+    
+    WITH customer_totals AS (
+    
+        SELECT customer_id,
+               SUM(total_amount) AS total_spent
+        FROM orders
+        GROUP BY customer_id
+    )
+    
+    SELECT customer_id,
+           total_spent,
+           RANK() OVER (
+               ORDER BY total_spent DESC
+           ) AS customer_rank
+    FROM customer_totals;
+
+| customer_id | total_spent | customer_rank |
+| ----------- | ----------- | ------------- |
+| 1           | 1700.0      | 1             |
+| 2           | 700.0       | 2             |
+| 3           | 300.0       | 3             |
+
+---
+**Query #28**
+
+    /* =====================================================
+    QUESTION 28
+    Find the second-highest salary in each department.
+    ===================================================== */
+    
+    WITH ranked_salaries AS (
+    
+        SELECT employee_name,
+               department,
+               salary,
+               DENSE_RANK() OVER (
+                   PARTITION BY department
+                   ORDER BY salary DESC
+               ) AS salary_rank
+        FROM employees
+    )
+    
+    SELECT *
+    FROM ranked_salaries
+    WHERE salary_rank = 2;
+
+| employee_name | department | salary  | salary_rank |
+| ------------- | ---------- | ------- | ----------- |
+| Charlie Brown | IT         | 90000.0 | 2           |
+| Bob Smith     | Sales      | 65000.0 | 2           |
+
+---
+**Query #29**
+
+    /* =====================================================
+    QUESTION 29
+    Display the difference between each employee salary and the department maximum salary.
+    ===================================================== */
+    
+    SELECT employee_name,
+           department,
+           salary,
+           MAX(salary) OVER (
+               PARTITION BY department
+           ) - salary AS salary_difference
+    FROM employees;
+
+| employee_name | department | salary  | salary_difference |
+| ------------- | ---------- | ------- | ----------------- |
+| Charlie Brown | IT         | 90000.0 | 5000.0            |
+| Diana Prince  | IT         | 95000.0 | 0.0               |
+| Alice Johnson | Sales      | 70000.0 | 0.0               |
+| Bob Smith     | Sales      | 65000.0 | 5000.0            |
+
+---
+**Query #30**
+
+    /* =====================================================
+    QUESTION 30
+    Combine CTEs and window functions to find the top-performing employee in each department based on total sales.
+    ===================================================== */
+    
+    WITH employee_sales AS (
+    
+        SELECT e.employee_id,
+               e.employee_name,
+               e.department,
+               SUM(o.total_amount) AS total_sales
+        FROM employees e
+        LEFT JOIN orders o
+        ON e.employee_id = o.employee_id
+        GROUP BY e.employee_id,
+                 e.employee_name,
+                 e.department
+    ),
+    
+    ranked_sales AS (
+    
+        SELECT *,
+               RANK() OVER (
+                   PARTITION BY department
+                   ORDER BY total_sales DESC
+               ) AS dept_rank
+        FROM employee_sales
+    )
+    
+    SELECT *
+    FROM ranked_sales
+    WHERE dept_rank = 1;
+
+| employee_id | employee_name | department | total_sales | dept_rank |
+| ----------- | ------------- | ---------- | ----------- | --------- |
+| 3           | Charlie Brown | IT         | 300.0       | 1         |
+| 1           | Alice Johnson | Sales      | 1700.0      | 1         |
