@@ -1,0 +1,274 @@
+**Query #1**
+
+    -- =====================================================
+    -- QUESTION 1
+    -- Display all students and the courses they are enrolled in.Include students who are not enrolled in any course.
+    -- =====================================================
+    
+    SELECT s.student_name,
+           c.course_name
+    FROM students s
+    LEFT JOIN enrollments e
+    ON s.student_id = e.student_id
+    LEFT JOIN courses c
+    ON e.course_id = c.course_id;
+
+| student_name  | course_name         |
+| ------------- | ------------------- |
+| Alice Johnson | SQL Basics          |
+| Bob Smith     | Python Fundamentals |
+| Charlie Brown | SQL Basics          |
+| Alice Johnson | Cloud Computing     |
+| Diana Prince  |                     |
+| Ethan Hunt    |                     |
+
+---
+**Query #2**
+
+    -- =====================================================
+    -- QUESTION 2
+    -- Find all courses that currently have no students enrolled.
+    -- =====================================================
+    
+    SELECT c.course_name
+    FROM courses c
+    LEFT JOIN enrollments e
+    ON c.course_id = e.course_id
+    WHERE e.course_id IS NULL;
+
+| course_name      |
+| ---------------- |
+| Data Analytics   |
+| Machine Learning |
+
+---
+**Query #3**
+
+    -- =====================================================
+    -- QUESTION 3
+    -- Display all instructors and the courses they teach,including instructors who are not assigned to any course.
+    -- =====================================================
+    
+    SELECT i.instructor_name,
+           c.course_name
+    FROM instructors i
+    LEFT JOIN courses c
+    ON i.instructor_id = c.instructor_id;
+
+| instructor_name | course_name         |
+| --------------- | ------------------- |
+| John Williams   | SQL Basics          |
+| Sarah Lee       | Python Fundamentals |
+| Michael Scott   | Cloud Computing     |
+| Emma Watson     |                     |
+
+---
+**Query #4**
+
+    -- =====================================================
+    -- QUESTION 4
+    -- Find all courses that do not have an instructor assigned.
+    -- =====================================================
+    
+    SELECT course_name
+    FROM courses
+    WHERE instructor_id IS NULL;
+
+| course_name      |
+| ---------------- |
+| Data Analytics   |
+| Machine Learning |
+
+---
+**Query #5**
+
+    -- =====================================================
+    -- QUESTION 5
+    -- Display all students and enrollment information using a RIGHT JOIN.
+    -- =====================================================
+    
+    SELECT s.student_name,
+           e.enrollment_id,
+           e.course_id
+    FROM students s
+    RIGHT JOIN enrollments e
+    ON s.student_id = e.student_id;
+
+| student_name  | enrollment_id | course_id |
+| ------------- | ------------- | --------- |
+| Alice Johnson | 1             | 101       |
+| Bob Smith     | 2             | 102       |
+| Charlie Brown | 3             | 101       |
+| Alice Johnson | 4             | 104       |
+
+---
+**Query #6**
+
+    -- =====================================================
+    -- QUESTION 6
+    -- Find students who are not enrolled in any course.
+    -- =====================================================
+    
+    SELECT s.student_name
+    FROM students s
+    LEFT JOIN enrollments e
+    ON s.student_id = e.student_id
+    WHERE e.student_id IS NULL;
+
+| student_name |
+| ------------ |
+| Diana Prince |
+| Ethan Hunt   |
+
+---
+**Query #7**
+
+    -- =====================================================
+    -- QUESTION 7
+    -- Display all students and enrollments, including unmatched rows from both tables.MySQL FULL OUTER JOIN replacement.
+    -- =====================================================
+    
+    SELECT s.student_name,
+           e.enrollment_id,
+           e.course_id
+    FROM students s
+    LEFT JOIN enrollments e
+    ON s.student_id = e.student_id
+    
+    UNION
+    
+    SELECT s.student_name,
+           e.enrollment_id,
+           e.course_id
+    FROM students s
+    RIGHT JOIN enrollments e
+    ON s.student_id = e.student_id;
+
+| student_name  | enrollment_id | course_id |
+| ------------- | ------------- | --------- |
+| Alice Johnson | 1             | 101       |
+| Bob Smith     | 2             | 102       |
+| Charlie Brown | 3             | 101       |
+| Alice Johnson | 4             | 104       |
+| Diana Prince  |               |           |
+| Ethan Hunt    |               |           |
+
+---
+**Query #8**
+
+    -- =====================================================
+    -- QUESTION 8
+    -- Find all courses that have never appeared in the enrollments table.
+    -- =====================================================
+    
+    SELECT c.course_name
+    FROM courses c
+    LEFT JOIN enrollments e
+    ON c.course_id = e.course_id
+    WHERE e.course_id IS NULL;
+
+| course_name      |
+| ---------------- |
+| Data Analytics   |
+| Machine Learning |
+
+---
+**Query #9**
+
+    -- =====================================================
+    -- QUESTION 9
+    -- Display all instructors and courses,including unmatched rows from both tables.MySQL FULL OUTER JOIN replacement.
+    -- =====================================================
+    
+    SELECT i.instructor_name,
+           c.course_name
+    FROM instructors i
+    LEFT JOIN courses c
+    ON i.instructor_id = c.instructor_id
+    
+    UNION
+    
+    SELECT i.instructor_name,
+           c.course_name
+    FROM instructors i
+    RIGHT JOIN courses c
+    ON i.instructor_id = c.instructor_id;
+
+| instructor_name | course_name         |
+| --------------- | ------------------- |
+| John Williams   | SQL Basics          |
+| Sarah Lee       | Python Fundamentals |
+| Michael Scott   | Cloud Computing     |
+| Emma Watson     |                     |
+|                 | Data Analytics      |
+|                 | Machine Learning    |
+
+---
+**Query #10**
+
+    -- =====================================================
+    -- QUESTION 10
+    -- Create a report showing:student name, course name, and instructor name. Include rows even if course or instructor information is missing.
+    -- =====================================================
+    
+    SELECT s.student_name,
+           c.course_name,
+           i.instructor_name
+    FROM students s
+    LEFT JOIN enrollments e
+    ON s.student_id = e.student_id
+    LEFT JOIN courses c
+    ON e.course_id = c.course_id
+    LEFT JOIN instructors i
+    ON c.instructor_id = i.instructor_id;
+
+| student_name  | course_name         | instructor_name |
+| ------------- | ------------------- | --------------- |
+| Alice Johnson | SQL Basics          | John Williams   |
+| Bob Smith     | Python Fundamentals | Sarah Lee       |
+| Charlie Brown | SQL Basics          | John Williams   |
+| Alice Johnson | Cloud Computing     | Michael Scott   |
+| Diana Prince  |                     |                 |
+| Ethan Hunt    |                     |                 |
+
+---
+**Query #11**
+
+    -- =====================================================
+    -- BONUS CHALLENGE
+    -- List every student and every course,even if there is no enrollment relationship.
+    -- =====================================================
+    
+    SELECT s.student_name,
+           c.course_name
+    FROM students s
+    CROSS JOIN courses c;
+
+| student_name  | course_name         |
+| ------------- | ------------------- |
+| Alice Johnson | SQL Basics          |
+| Alice Johnson | Python Fundamentals |
+| Alice Johnson | Data Analytics      |
+| Alice Johnson | Cloud Computing     |
+| Alice Johnson | Machine Learning    |
+| Bob Smith     | SQL Basics          |
+| Bob Smith     | Python Fundamentals |
+| Bob Smith     | Data Analytics      |
+| Bob Smith     | Cloud Computing     |
+| Bob Smith     | Machine Learning    |
+| Charlie Brown | SQL Basics          |
+| Charlie Brown | Python Fundamentals |
+| Charlie Brown | Data Analytics      |
+| Charlie Brown | Cloud Computing     |
+| Charlie Brown | Machine Learning    |
+| Diana Prince  | SQL Basics          |
+| Diana Prince  | Python Fundamentals |
+| Diana Prince  | Data Analytics      |
+| Diana Prince  | Cloud Computing     |
+| Diana Prince  | Machine Learning    |
+| Ethan Hunt    | SQL Basics          |
+| Ethan Hunt    | Python Fundamentals |
+| Ethan Hunt    | Data Analytics      |
+| Ethan Hunt    | Cloud Computing     |
+| Ethan Hunt    | Machine Learning    |
+
