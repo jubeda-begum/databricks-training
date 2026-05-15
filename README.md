@@ -28,6 +28,17 @@ This repository contains my daily SQL practice and learning work completed durin
 - UNION Operator
 - SQL Joins Practice Queries
 
+### Day 4
+- ROW_NUMBER()
+- RANK()
+- DENSE_RANK()
+- PARTITION BY
+- LAG() and LEAD()
+- NTILE()
+- Window Functions
+- CTEs and Recursive CTEs
+- Running Totals and Moving Average
+
 ## Files
 
 - `datacreation.sql` → Table creation and sample data
