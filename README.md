@@ -20,7 +20,7 @@ This repository contains my daily SQL practice and learning work completed durin
 - IN, NOT IN, BETWEEN Operators
 - LIKE Operator Practice
 
-  ### Day 3
+### Day 3
 - LEFT JOIN
 - RIGHT JOIN
 - FULL OUTER JOIN
