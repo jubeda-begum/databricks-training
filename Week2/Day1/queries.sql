@@ -1,13 +1,13 @@
-QUESTION 1: Employee Compensation Classification
+--QUESTION 1: Employee Compensation Classification
 
-Question:
+--Question:
 
-Write an SQL query to display the following details for each employee:
+--Write an SQL query to display the following details for each employee:
 
-1. Convert emp_name into:
-   - UPPER CASE
-   - lower case
-   - InitCap / Camel Case
+--1. Convert emp_name into:
+  -- - UPPER CASE
+  -- - lower case
+   --- InitCap / Camel Case
 
 2. Calculate total income using:
    - base_salary + bonus
