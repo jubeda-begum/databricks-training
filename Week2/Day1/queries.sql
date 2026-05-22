@@ -1086,3 +1086,890 @@ SELECT
     END AS audit_status
 
 FROM digit_audit;
+
+
+-- =========================================================
+-- QUESTION 21 – Weekend Salary Credit Fraud Detection
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Extract bank prefix from bank_code
+-- • Identify weekday name of credit_date
+-- • Round salary
+-- • Apply MOD on salary
+-- • CASE:
+--    o Weekend Fraud if credited on Saturday/Sunday
+--      AND salary MOD 5 = 0
+--    o Bank Review if bank is HDFC
+--    o Else Normal
+
+SELECT
+
+    emp_id,
+
+    LEFT(bank_code,4)
+        AS bank_prefix,
+
+    DAYNAME(credit_date)
+        AS weekday_name,
+
+    ROUND(salary)
+        AS rounded_salary,
+
+    MOD(ROUND(salary),5)
+        AS salary_mod,
+
+    CASE
+
+        WHEN DAYNAME(credit_date)
+             IN ('Saturday','Sunday')
+             AND MOD(ROUND(salary),5)=0
+            THEN 'Weekend Fraud'
+
+        WHEN LEFT(bank_code,4)='HDFC'
+            THEN 'Bank Review'
+
+        ELSE 'Normal'
+
+    END AS fraud_status
+
+FROM salary_credit_audit;
+
+
+
+-- =========================================================
+-- QUESTION 22 – Salary Credit Time Drift Analysis
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Extract hour from credit timestamp
+-- • Convert emp_name to lowercase
+-- • Floor salary
+-- • Calculate difference between salary and hour
+-- • CASE:
+--    o Midnight Drift if hour between 0–3
+--    o After Hours
+--    o Business Hours
+
+SELECT
+
+    emp_id,
+
+    LOWER(emp_name)
+        AS employee_name,
+
+    HOUR(credit_ts)
+        AS credit_hour,
+
+    FLOOR(salary)
+        AS floor_salary,
+
+    ABS(FLOOR(salary)-HOUR(credit_ts))
+        AS salary_hour_difference,
+
+    CASE
+
+        WHEN HOUR(credit_ts) BETWEEN 0 AND 3
+            THEN 'Midnight Drift'
+
+        WHEN HOUR(credit_ts) NOT BETWEEN 9 AND 18
+            THEN 'After Hours'
+
+        ELSE 'Business Hours'
+
+    END AS drift_status
+
+FROM salary_time_drift;
+
+
+
+-- =========================================================
+-- QUESTION 23 – Salary Decimal Precision Audit
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Truncate salary to 2 decimals
+-- • Calculate difference between rounded and truncated value
+-- • Extract day name
+-- • Get length of emp_name
+-- • CASE:
+--    o Precision Loss if difference > 0.01
+--    o Safe
+
+SELECT
+
+    emp_id,
+
+    TRUNCATE(salary,2)
+        AS truncated_salary,
+
+    ABS(
+        ROUND(salary,2) -
+        TRUNCATE(salary,2)
+    ) AS precision_difference,
+
+    DAYNAME(record_date)
+        AS day_name,
+
+    LENGTH(emp_name)
+        AS name_length,
+
+    CASE
+
+        WHEN ABS(
+                ROUND(salary,2) -
+                TRUNCATE(salary,2)
+             ) > 0.01
+            THEN 'Precision Loss'
+
+        ELSE 'Safe'
+
+    END AS precision_status
+
+FROM salary_precision;
+
+
+
+-- =========================================================
+-- QUESTION 24 – Salary Growth Power Index
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Calculate years since last hike
+-- • Apply POWER using growth_rate and years
+-- • Round projected salary
+-- • Uppercase emp_name
+-- • CASE:
+--    o Explosive Growth if projected > 150000
+--    o Controlled
+--    o Stagnant
+
+SELECT
+
+    emp_id,
+
+    UPPER(emp_name)
+        AS employee_name,
+
+    TIMESTAMPDIFF(
+        YEAR,
+        last_hike,
+        CURDATE()
+    ) AS years_since_hike,
+
+    ROUND(
+        base_salary *
+        POWER(
+            growth_rate,
+            TIMESTAMPDIFF(
+                YEAR,
+                last_hike,
+                CURDATE()
+            )
+        )
+    ) AS projected_salary,
+
+    CASE
+
+        WHEN ROUND(
+                base_salary *
+                POWER(
+                    growth_rate,
+                    TIMESTAMPDIFF(
+                        YEAR,
+                        last_hike,
+                        CURDATE()
+                    )
+                )
+             ) > 150000
+            THEN 'Explosive Growth'
+
+        WHEN ROUND(
+                base_salary *
+                POWER(
+                    growth_rate,
+                    TIMESTAMPDIFF(
+                        YEAR,
+                        last_hike,
+                        CURDATE()
+                    )
+                )
+             ) BETWEEN 100000 AND 150000
+            THEN 'Controlled'
+
+        ELSE 'Stagnant'
+
+    END AS growth_status
+
+FROM salary_growth;
+
+
+
+-- =========================================================
+-- QUESTION 25 – Salary Symmetry Check
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Remove decimals from salary
+-- • Reverse salary digits
+-- • Extract weekday
+-- • Proper case emp_name
+-- • CASE:
+--    o Symmetric Pay if reversed equals original
+--    o Asymmetric
+
+SELECT
+
+    emp_id,
+
+    CONCAT(
+        UPPER(LEFT(emp_name,1)),
+        LOWER(SUBSTRING(emp_name,2))
+    ) AS proper_name,
+
+    TRUNCATE(salary,0)
+        AS integer_salary,
+
+    REVERSE(TRUNCATE(salary,0))
+        AS reversed_salary,
+
+    DAYNAME(processed_date)
+        AS weekday_name,
+
+    CASE
+
+        WHEN TRUNCATE(salary,0) =
+             REVERSE(TRUNCATE(salary,0))
+            THEN 'Symmetric Pay'
+
+        ELSE 'Asymmetric'
+
+    END AS symmetry_status
+
+FROM salary_symmetry;
+
+
+
+-- =========================================================
+-- QUESTION 26 – Leap Year Salary Adjustment Audit
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Extract year
+-- • Check leap year logic
+-- • CEIL salary
+-- • Calculate day of year
+-- • CASE:
+--    o Leap Credit
+--    o Non-Leap Credit
+
+SELECT
+
+    emp_id,
+
+    YEAR(credit_date)
+        AS credit_year,
+
+    CEIL(salary)
+        AS ceil_salary,
+
+    DAYOFYEAR(credit_date)
+        AS day_of_year,
+
+    CASE
+
+        WHEN (
+            (YEAR(credit_date) % 4 = 0
+             AND YEAR(credit_date) % 100 != 0)
+             OR YEAR(credit_date) % 400 = 0
+        )
+        THEN 'Leap Credit'
+
+        ELSE 'Non-Leap Credit'
+
+    END AS leap_status
+
+FROM leap_salary;
+
+-- =========================================================
+-- QUESTION 27 – Fiscal Year Boundary Salary Check
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Determine fiscal year
+-- • Extract month
+-- • Format salary
+-- • Lowercase emp_name
+-- • CASE:
+--    o Year End Credit
+--    o Year Start Credit
+--    o Mid Year
+
+SELECT
+
+    emp_id,
+
+    LOWER(emp_name)
+        AS employee_name,
+
+    CASE
+
+        WHEN MONTH(credit_date) >= 4
+            THEN CONCAT(
+                    YEAR(credit_date),
+                    '-',
+                    YEAR(credit_date)+1
+                 )
+
+        ELSE CONCAT(
+                YEAR(credit_date)-1,
+                '-',
+                YEAR(credit_date)
+             )
+
+    END AS fiscal_year,
+
+    MONTHNAME(credit_date)
+        AS month_name,
+
+    FORMAT(salary,2)
+        AS formatted_salary,
+
+    CASE
+
+        WHEN MONTH(credit_date)=3
+             AND DAY(credit_date)>=29
+            THEN 'Year End Credit'
+
+        WHEN MONTH(credit_date)=4
+             AND DAY(credit_date)<=5
+            THEN 'Year Start Credit'
+
+        ELSE 'Mid Year'
+
+    END AS fiscal_status
+
+FROM fiscal_salary;
+
+
+
+-- =========================================================
+-- QUESTION 28 – Salary Random Sampling for Audit
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Generate random value
+-- • Round salary
+-- • Extract day name
+-- • Extract first character of emp_name
+-- • CASE:
+--    o Sampled if RAND() > 0.7
+--    o Skipped
+
+SELECT
+
+    emp_id,
+
+    ROUND(RAND(),2)
+        AS random_value,
+
+    ROUND(salary)
+        AS rounded_salary,
+
+    DAYNAME(record_date)
+        AS day_name,
+
+    LEFT(emp_name,1)
+        AS first_character,
+
+    CASE
+
+        WHEN RAND() > 0.7
+            THEN 'Sampled'
+
+        ELSE 'Skipped'
+
+    END AS audit_status
+
+FROM salary_sampling;
+
+
+
+-- =========================================================
+-- QUESTION 29 – Salary ASCII Integrity Check
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Extract ASCII value of first character
+-- • Calculate years since joining
+-- • Floor salary
+-- • Compare ASCII vs years
+-- • CASE:
+--    o Name Dominates
+--    o Experience Dominates
+
+SELECT
+
+    emp_id,
+
+    ASCII(
+        LEFT(emp_name,1)
+    ) AS ascii_value,
+
+    TIMESTAMPDIFF(
+        YEAR,
+        join_date,
+        CURDATE()
+    ) AS years_since_joining,
+
+    FLOOR(salary)
+        AS floor_salary,
+
+    CASE
+
+        WHEN ASCII(
+                LEFT(emp_name,1)
+             ) >
+             TIMESTAMPDIFF(
+                YEAR,
+                join_date,
+                CURDATE()
+             )
+            THEN 'Name Dominates'
+
+        ELSE 'Experience Dominates'
+
+    END AS integrity_status
+
+FROM salary_ascii;
+
+
+
+-- =========================================================
+-- QUESTION 30 – Salary vs Calendar Symmetry Logic
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Extract day and month
+-- • Extract last two digits of salary
+-- • Uppercase emp_name
+-- • Absolute difference between day and month
+-- • CASE:
+--    o Calendar Match if day = month
+--      OR salary digits match
+--    o Calendar Drift
+
+SELECT
+
+    emp_id,
+
+    UPPER(emp_name)
+        AS employee_name,
+
+    DAY(credit_date)
+        AS credit_day,
+
+    MONTH(credit_date)
+        AS credit_month,
+
+    RIGHT(
+        TRUNCATE(salary,0),
+        2
+    ) AS last_two_digits,
+
+    ABS(
+        DAY(credit_date) -
+        MONTH(credit_date)
+    ) AS day_month_difference,
+
+    CASE
+
+        WHEN DAY(credit_date)=MONTH(credit_date)
+             OR RIGHT(
+                    TRUNCATE(salary,0),
+                    2
+                ) = LPAD(
+                        MONTH(credit_date),
+                        2,
+                        '0'
+                    )
+            THEN 'Calendar Match'
+
+        ELSE 'Calendar Drift'
+
+    END AS calendar_status
+
+FROM salary_calendar;
+
+-- =========================================================
+-- QUESTION 31 – Employee Login Discipline & Performance Classification
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Convert emp_name to proper case
+-- • Identify whether login date is Weekday or Weekend
+-- • Calculate total working hours (logout – login)
+-- • Round working hours to 2 decimals
+-- • Use CASE:
+--    o Good Performer if weekday AND working hours ≥ 8
+--    o Bad Performer if weekday AND working hours < 6
+--    o Weekend Login otherwise
+
+SELECT
+
+    emp_id,
+
+    CONCAT(
+        UPPER(LEFT(emp_name,1)),
+        LOWER(SUBSTRING(emp_name,2))
+    ) AS proper_name,
+
+    CASE
+
+        WHEN DAYNAME(login_time)
+             IN ('Saturday','Sunday')
+            THEN 'Weekend'
+
+        ELSE 'Weekday'
+
+    END AS login_day_type,
+
+    ROUND(
+        TIMESTAMPDIFF(
+            MINUTE,
+            login_time,
+            logout_time
+        ) / 60,
+        2
+    ) AS working_hours,
+
+    CASE
+
+        WHEN DAYNAME(login_time)
+             NOT IN ('Saturday','Sunday')
+             AND (
+                 TIMESTAMPDIFF(
+                    MINUTE,
+                    login_time,
+                    logout_time
+                 ) / 60
+             ) >= 8
+            THEN 'Good Performer'
+
+        WHEN DAYNAME(login_time)
+             NOT IN ('Saturday','Sunday')
+             AND (
+                 TIMESTAMPDIFF(
+                    MINUTE,
+                    login_time,
+                    logout_time
+                 ) / 60
+             ) < 6
+            THEN 'Bad Performer'
+
+        ELSE 'Weekend Login'
+
+    END AS performance_status
+
+FROM employee_login;
+
+
+
+-- =========================================================
+-- QUESTION 32 – Past 7 Days Attendance & Productivity Check
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Uppercase employee name
+-- • Check if login_date falls within last 7 days from today
+-- • Identify Weekday / Weekend
+-- • Calculate working hours using TIMEDIFF
+-- • Use CASE:
+--    o Active & Productive if last 7 days AND hours ≥ 8
+--    o Active but Low Hours if last 7 days AND hours < 8
+--    o Absent from Last 7 Days
+
+SELECT
+
+    emp_id,
+
+    UPPER(emp_name)
+        AS employee_name,
+
+    CASE
+
+        WHEN login_date >= CURDATE() - INTERVAL 7 DAY
+            THEN 'Within Last 7 Days'
+
+        ELSE 'Old Record'
+
+    END AS attendance_status,
+
+    CASE
+
+        WHEN DAYNAME(login_date)
+             IN ('Saturday','Sunday')
+            THEN 'Weekend'
+
+        ELSE 'Weekday'
+
+    END AS day_type,
+
+    TIME_TO_SEC(
+        TIMEDIFF(
+            logout_time,
+            login_time
+        )
+    ) / 3600 AS working_hours,
+
+    CASE
+
+        WHEN login_date >= CURDATE() - INTERVAL 7 DAY
+             AND (
+                 TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                 ) / 3600
+             ) >= 8
+            THEN 'Active & Productive'
+
+        WHEN login_date >= CURDATE() - INTERVAL 7 DAY
+             AND (
+                 TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                 ) / 3600
+             ) < 8
+            THEN 'Active but Low Hours'
+
+        ELSE 'Absent from Last 7 Days'
+
+    END AS productivity_status
+
+FROM attendance_log;
+
+
+
+-- =========================================================
+-- QUESTION 33 – Weekend Work Abuse Detection
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Extract day name from work_date
+-- • Lowercase employee name
+-- • Calculate working hours
+-- • Apply CEIL on hours
+-- • Use CASE:
+--    o Weekend Overtime if Saturday/Sunday AND hours ≥ 8
+--    o Suspicious Login if weekend AND hours < 4
+--    o Normal Working Day
+
+SELECT
+
+    emp_id,
+
+    LOWER(emp_name)
+        AS employee_name,
+
+    DAYNAME(work_date)
+        AS day_name,
+
+    CEIL(
+        TIME_TO_SEC(
+            TIMEDIFF(
+                logout_time,
+                login_time
+            )
+        ) / 3600
+    ) AS working_hours,
+
+    CASE
+
+        WHEN DAYNAME(work_date)
+             IN ('Saturday','Sunday')
+             AND (
+                 TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                 ) / 3600
+             ) >= 8
+            THEN 'Weekend Overtime'
+
+        WHEN DAYNAME(work_date)
+             IN ('Saturday','Sunday')
+             AND (
+                 TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                 ) / 3600
+             ) < 4
+            THEN 'Suspicious Login'
+
+        ELSE 'Normal Working Day'
+
+    END AS work_status
+
+FROM weekend_monitor;
+
+
+
+-- =========================================================
+-- QUESTION 34 – Login Time Deviation & Discipline Score
+-- =========================================================
+
+-- Question
+-- For each employee:
+-- • Extract login hour
+-- • Calculate total working hours
+-- • Truncate working hours to 1 decimal
+-- • Get weekday name
+-- • Use CASE:
+--    o Disciplined if weekday AND login before 9 AND hours ≥ 8
+--    o Late Comer if weekday AND login after 10
+--    o Poor Discipline otherwise
+
+SELECT
+
+    emp_id,
+
+    HOUR(login_datetime)
+        AS login_hour,
+
+    TRUNCATE(
+        TIMESTAMPDIFF(
+            MINUTE,
+            login_datetime,
+            logout_datetime
+        ) / 60,
+        1
+    ) AS working_hours,
+
+    DAYNAME(login_datetime)
+        AS weekday_name,
+
+    CASE
+
+        WHEN DAYNAME(login_datetime)
+             NOT IN ('Saturday','Sunday')
+             AND HOUR(login_datetime) < 9
+             AND (
+                 TIMESTAMPDIFF(
+                    MINUTE,
+                    login_datetime,
+                    logout_datetime
+                 ) / 60
+             ) >= 8
+            THEN 'Disciplined'
+
+        WHEN DAYNAME(login_datetime)
+             NOT IN ('Saturday','Sunday')
+             AND HOUR(login_datetime) > 10
+            THEN 'Late Comer'
+
+        ELSE 'Poor Discipline'
+
+    END AS discipline_status
+
+FROM login_discipline;
+
+
+
+-- =========================================================
+-- QUESTION 35 – Absenteeism vs Performance Correlation
+-- =========================================================
+
+-- Question
+-- For each record:
+-- • Identify whether work_date is within last 7 days
+-- • Identify weekday or weekend
+-- • Calculate total hours worked
+-- • Apply FLOOR to hours
+-- • Use CASE:
+--    o Consistent Performer if last 7 days
+--      AND weekday AND hours ≥ 8
+--    o Irregular Performer if hours < 6
+--    o Absent / Old Record
+
+SELECT
+
+    emp_id,
+
+    CASE
+
+        WHEN work_date >= CURDATE() - INTERVAL 7 DAY
+            THEN 'Recent Record'
+
+        ELSE 'Old Record'
+
+    END AS record_status,
+
+    CASE
+
+        WHEN DAYNAME(work_date)
+             IN ('Saturday','Sunday')
+            THEN 'Weekend'
+
+        ELSE 'Weekday'
+
+    END AS day_type,
+
+    FLOOR(
+        TIME_TO_SEC(
+            TIMEDIFF(
+                logout_time,
+                login_time
+            )
+        ) / 3600
+    ) AS total_hours,
+
+    CASE
+
+        WHEN work_date >= CURDATE() - INTERVAL 7 DAY
+             AND DAYNAME(work_date)
+                 NOT IN ('Saturday','Sunday')
+             AND (
+                 TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                 ) / 3600
+             ) >= 8
+            THEN 'Consistent Performer'
+
+        WHEN (
+                TIME_TO_SEC(
+                    TIMEDIFF(
+                        logout_time,
+                        login_time
+                    )
+                ) / 3600
+             ) < 6
+            THEN 'Irregular Performer'
+
+        ELSE 'Absent / Old Record'
+
+    END AS performance_status
+
+FROM performance_tracker;
