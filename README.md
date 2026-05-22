@@ -39,6 +39,20 @@ This repository contains my daily SQL practice and learning work completed durin
 - CTEs and Recursive CTEs
 - Running Totals and Moving Average
 
+### Week 2
+
+### Day 1
+- String Functions
+- Numeric Functions
+- Date Functions
+- Time Functions
+- CASE Statements
+- Salary Analysis Queries
+- Attendance Analysis
+- Performance Tracking
+- Audit and Risk Detection Queries
+- Login Discipline Queries
+
 ## Files
 
 - `datacreation.sql` → Table creation and sample data
